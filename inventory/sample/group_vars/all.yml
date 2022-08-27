@@ -1,8 +1,13 @@
 ---
-k3s_version: v1.24.3+k3s1
+#k3s_version: v1.24.3+k3s1
+k3s_version: v1.23.9+k3s1
 # this is the user that has ssh access to these machines
 ansible_user: ansibleuser
 systemd_dir: /etc/systemd/system
+
+# Set your environment
+deployment_environment: staging
+#deployment_environment: production
 
 # Set your timezone
 system_timezone: "Your/Timezone"
@@ -17,7 +22,7 @@ apiserver_endpoint: "192.168.30.222"
 # this token should be alpha numeric only
 k3s_token: "some-SUPER-DEDEUPER-secret-password"
 
-# change these to your liking, the only required one is--disable servicelb
+# change these to your liking, the only required one is --disable servicelb
 extra_server_args: "--disable servicelb --disable traefik"
 extra_agent_args: ""
 
@@ -30,3 +35,25 @@ metal_lb_controller_tag_version: "v0.13.4"
 
 # metallb ip range for load balancer
 metal_lb_ip_range: "192.168.30.80-192.168.30.90"
+
+# first ip from metallb range for internal traefik
+traefik_internal_endpoint_ip: "192.168.30.80"
+traefik_internal_dash_dns_name: "traefik.local.example.com"
+
+# second ip from metallb range for external traefik
+traefik_external_endpoint_ip: "192.168.30.81"
+traefik_external_dash_dns_name: "traefik.example.com"
+
+# external dashboard user
+traefik_dashboard_secret: "dGVjaG5vOiRhcHIxJFRnVVJ0N2E1JFpoTFFGeDRLMk8uYVNaVWNueG41eTAKCg=="
+
+# cloudflare api key
+cloudflare_email: "user@example.com"
+cloudflare_token: "some-SUPER-DEDEUPER-secret-token"
+
+# image tag for cert-manager
+cert_manager_version: "v1.9.1"
+
+# cert manager domains
+cert_manager_internal_domain: "local.example.com"
+cert_manager_external_domain: "example.com"

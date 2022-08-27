@@ -1,0 +1,19 @@
+- name: Create helm config directory on first master
+  file:
+    path: /tmp/helm
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+
+- name: Download helm install script
+  get_url:
+    url: https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
+    dest: /tmp/helm/get-helm-3.sh
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0755
+
+- name: Install helm on first master
+  command: >-
+    bash /tmp/helm/get-helm-3.sh
+  changed_when: true

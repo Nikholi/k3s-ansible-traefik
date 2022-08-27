@@ -1,0 +1,14 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: internal-tls
+  namespace: default
+spec:
+  secretName: internal-tls-{{ deployment_environment }}
+  issuerRef:
+    name: letsencrypt-{{ deployment_environment }}
+    kind: ClusterIssuer
+  commonName: "*.{{ cert_manager_internal_domain }}"
+  dnsNames:
+  - "{{ cert_manager_internal_domain}}"
+  - "*.{{ cert_manager_internal_domain }}"

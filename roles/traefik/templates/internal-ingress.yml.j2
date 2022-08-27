@@ -1,0 +1,19 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: dashboard-internal-ingress
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: traefik-internal
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`{{ traefik_internal_dash_dns_name }}`)
+      kind: Rule
+      services:
+        - name: api@internal
+          namespace: traefik
+          kind: TraefikService
+  tls:
+    secretName: internal-tls-{{ deployment_environment }}

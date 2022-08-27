@@ -1,0 +1,115 @@
+---
+- name: Create traefik config directory on first master
+  file:
+    path: /tmp/traefik
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+
+- name: Copy traefik external chart values to first master
+  template:
+    src: "external-values.yml.j2"
+    dest: /tmp/traefik/external-values.yml
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0644
+
+- name: Copy traefik internal chart values to first master
+  template:
+    src: "internal-values.yml.j2"
+    dest: /tmp/traefik/internal-values.yml
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0644
+
+- name: Copy traefik default headers to first master
+  template:
+    src: "default-headers.yml.j2"
+    dest: /tmp/traefik/default-headers.yml
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0644
+
+- name: Copy traefik dashboard secret to first master
+  template:
+    src: "dashboard-secret.yml.j2"
+    dest: /tmp/traefik/dashboard-secret.yml
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0644
+
+- name: Copy traefik external dashboard ingress to first master
+  template:
+    src: "external-ingress.yml.j2"
+    dest: /tmp/traefik/external-ingress.yml
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0644
+
+- name: Copy traefik internal dashboard ingress to first master
+  template:
+    src: "internal-ingress.yml.j2"
+    dest: /tmp/traefik/internal-ingress.yml
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0644
+
+- name: add traefik helm repo
+  command:
+    cmd: "helm repo add traefik https://helm.traefik.io/traefik"
+  changed_when: true
+
+- name: update helm repo
+  command:
+    cmd: "helm repo update"
+  changed_when: true
+
+- name: wait for k3s API server VIP {{ apiserver_endpoint }} to be available
+  wait_for:
+    host: "{{ apiserver_endpoint }}"
+    port: 6443
+    delay: 10
+
+- name: create traefik namespace
+  command:
+    cmd: "kubectl create namespace traefik"
+  changed_when: true
+
+- name: deploy traefik external using helm
+  command:
+    cmd: "helm install traefik-external traefik/traefik \
+      --namespace=traefik \
+      --values=/tmp/traefik/external-values.yml"
+  changed_when: true
+
+- name: deploy traefik internal using helm
+  command:
+    cmd: "helm install traefik-internal traefik/traefik \
+      --namespace=traefik \
+      --values=/tmp/traefik/internal-values.yml"
+  changed_when: true
+
+- name: apply traefik default headers
+  command:
+    cmd: kubectl apply -f /tmp/traefik/default-headers.yml
+  changed_when: true
+
+- name: apply traefik dashboard secret
+  command:
+    cmd: kubectl apply -f /tmp/traefik/dashboard-secret.yml
+  changed_when: true
+
+- name: apply traefik external dashboard
+  command:
+    cmd: kubectl apply -f /tmp/traefik/external-ingress.yml
+  changed_when: true
+
+- name: apply traefik internal dashboard
+  command:
+    cmd: kubectl apply -f /tmp/traefik/internal-ingress.yml
+  changed_when: true
+
+- name: Clean up traefik tmp dir
+  file:
+    path: /tmp/traefik/
+    state: absent 
